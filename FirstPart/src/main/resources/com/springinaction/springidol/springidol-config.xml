@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	default-init-method="turnOnLights"
+	default-destroy-method="turnOffLights"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+	<bean id="duke" class="com.springinaction.springidol.Juggler"
+		abstract="false">
+		<constructor-arg value="15"/>
+	</bean>
+	<bean id="sonnet29" class="com.springinaction.springidol.Sonnet29"></bean>
+	<bean id="PoeticDuke" class="com.springinaction.springidol.PoeticJuggler" autowire="constructor">
+		<constructor-arg value="15"></constructor-arg>
+		<constructor-arg ref="sonnet29"></constructor-arg>
+	</bean>
+	<bean id="theStage" class="com.springinaction.springidol.Stage" factory-method="getInstance"/>
+	<bean id="auditorium" class="com.springinaction.springidol.Auditorium" init-method="turnOnLights" destroy-method="turnOffLights"/>
+	<bean id="cymbal" class="com.springinaction.springidol.Cymbal" />
+	<bean id="harmonica" class="com.springinaction.springidol.Harmonica" />
+	<bean id="instrument" class="com.springinaction.springidol.Saxophone" />
+	<bean id="saxophone" class="com.springinaction.springidol.Saxophone" />
+	<bean id="kenny" class="com.springinaction.springidol.Instrumentalist" autowire="byName">
+		<property name="song" value="Jingle Bells" />
+	</bean>
+	<bean id="hank" class="com.springinaction.springidol.OneManBand">
+		<property name="instruments">
+			<list>
+				<ref bean="cymbal"/>
+				<ref bean="harmonica"/>
+				<ref bean="saxophone"/>
+			</list>
+		</property>
+	</bean>
+	<bean id="audience" class="com.springinaction.springidol.Audience"/>
+	<bean id="magician" class="com.springinaction.springidol.Magician"/>
+	<bean id="thinker" class="com.springinaction.springidol.Volunteer"/>
+ 	<aop:config>
+		<aop:aspect ref="audience">
+			<aop:pointcut expression="execution(* *.perform(..))" id="performance"/>
+<!-- 			<aop:before pointcut-ref="performance" method="takeSeats"/>
+			<aop:before pointcut-ref="performance" method="turnOffCellPhones"/> -->
+			<aop:around pointcut-ref="performance" method="watchPerformance"/>
+<!-- 			<aop:after-returning pointcut-ref="performance" method="appland"/>			
+			<aop:after-throwing pointcut-ref="performance" method="demandRefund"/>	 -->
+		</aop:aspect>
+	
+		<aop:aspect ref="magician">
+			<aop:pointcut expression="execution(* *.thinkOfSomething(String)) and args(thoughts)" id="thinking"/>
+			<aop:before pointcut-ref="thinking" method="interceptThoughts" arg-names="thoughts"/>
+		</aop:aspect>
+	</aop:config>
+	
+	<bean id="criticismEngine" class="com.springinaction.springidol.CriticismEngineImpl">
+		<property name="criticismPool">
+			<list>
+        		<value>I'm not being rude, but that was appalling.</value>
+        		<value>You may be the least talented person in this show.</value>
+        		<value>Do everyone a favor and keep your day job.</value>
+      		</list>
+		</property>
+	</bean>
+	<bean class="com.springinaction.springidol.JudgeAspect" factory-method="aspectOf">
+		<property name = "criticismEngine" ref="criticismEngine"/>
+	</bean>
+</beans>
